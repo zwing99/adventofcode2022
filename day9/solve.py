@@ -1,6 +1,8 @@
 import sys
 import math
 from dataclasses import dataclass
+import gnuplotlib as gp
+import numpy as np
 filename = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
 
 with open(filename) as fh:
@@ -77,8 +79,8 @@ print(len(tail_positions))
 rope = [Point(0,0) for i in range(10)]
 h = Point(0,0)
 t = Point(0,0)
-tail_positions = set()
-tail_positions.add(rope[9].coord())
+tail_positions = list()
+tail_positions.append(rope[9].coord())
 
 
 for line in lines:
@@ -113,9 +115,15 @@ for line in lines:
                 c.y += y_move
                 #print(h,t)
                 #print()
-                tail_positions.add(rope[9].coord())
+                tail_positions.append(rope[9].coord())
 
 
-#print(tail_positions)
-print(len(tail_positions))
+print(len(set(tail_positions)))
 
+x_s = np.array([p[0] for p in tail_positions])
+y_s = np.array([p[1] for p in tail_positions])
+
+gp.plot( (x_s, y_s),
+      _with    = 'points',
+      terminal = 'dumb 100,50',
+      unset    = 'grid')
