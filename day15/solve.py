@@ -4,6 +4,10 @@ filename = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
 with open(filename) as fh:
     lines = [line.strip() for line in fh.readlines()]
 
+import help
+print(help.add(1,2))
+#exit()
+
 target = 2000000 if filename == 'input.txt' else 10
 
 def parse_coord(coord):
@@ -93,6 +97,10 @@ def part2():
             x += 1
         y += 1
 
-(x,y) = part2()
-print(x,y)
-print(x*4000000+y)
+#(x,y) = part2()
+#print(x,y)
+#print(x*4000000+y)
+
+sensors_n_distances = list(zip(sensors, distances))
+v = help.part2(sensors_n_distances)
+print(v)
