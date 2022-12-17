@@ -29,8 +29,9 @@ for line in lines:
     valves[valve.name] = valve
 
 for v in valves.values():
-    print(f"{v.name} -> {v.leads_to}")
-
+    for l in v.leads_to:
+        print(f"{v.name} -> {l}")
+exit(1)
 
 @dataclass
 class State:

@@ -1,0 +1,25 @@
+@startuml
+digraph foo {
+AA -> BB
+AA -> II
+AA -> DD
+BB -> AA
+BB -> CC
+CC -> BB
+CC -> DD
+DD -> EE
+DD -> AA
+DD -> CC
+EE -> DD
+EE -> FF
+FF -> GG
+FF -> EE
+GG -> HH
+GG -> FF
+HH -> GG
+II -> JJ
+II -> AA
+JJ -> II
+
+}
+@enduml
