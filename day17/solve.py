@@ -1,4 +1,4 @@
-#from tqdm import tqdm
+from tqdm import tqdm
 from copy import deepcopy
 import sys
 import math
@@ -59,7 +59,8 @@ THE_LOOP = NUM_OF_JETSTREAM*NUM_ROCK_SHAPES
 
 
 @functools.cache
-def run_blocks(total_rocks=2022, prior=default_prior):
+def run_blocks(total_rocks=2022, prior=default_prior, break_in=False):
+    print("here")
     #print(total_rocks, hash(initial), last_max)
     grid = [list(item) for item in prior]
     init_val = len(grid)
@@ -76,7 +77,7 @@ def run_blocks(total_rocks=2022, prior=default_prior):
         while True:
             # shift rock
             ###############################################################
-            jet_dir = get_jet_direction(jet_count)
+            jet_dir = get_jet_direction(jet_count%NUM_OF_JETSTREAM)
             jet_count += 1
             # can shift
             can_shift = True
@@ -116,18 +117,23 @@ def run_blocks(total_rocks=2022, prior=default_prior):
             max_row = max_y
         for coord in rock:
             grid[(coord[Y]) % HEIGHT][coord[X]] = 1
-        None
+        if break_in:
+            if rock_num % NUM_ROCK_SHAPES == 0:
+                if jet_count % NUM_OF_JETSTREAM == 0:
+                    break
+        if rock_num % 1000 == 0:
+            print(rock_num)
 
     new_grid = []
     moar = max_row + 1
     while sum(grid[moar%HEIGHT]) == 0:
         moar += 1
-    for i in range(moar, moar+int(HEIGHT/2)):
+    for i in range(moar, moar+HEIGHT-10):
         asdf = grid[i%HEIGHT]
         new_grid.append(asdf)
     new_grid = tuple([tuple(item) for item in new_grid])
     max_row -= init_val
-    return max_row, new_grid
+    return max_row, new_grid, rock_num + 1
 
 
 def convert(x):
@@ -147,43 +153,48 @@ def print_grid(grid):
 
 
 # part 1
-max_row, _ = run_blocks(10)
+max_row, _, _ = run_blocks(10)
 #print_grid(_)
-max_row, _ = run_blocks()
+max_row, _, _ = run_blocks()
 #print_grid(_)
 print(max_row)
 print()
-exit(1)
+#exit(1)
+
 # part 2
 BIG = 1_000_000_000_000
-print(THE_LOOP)
-steps = int(BIG/THE_LOOP)
-#print(steps)
-rest = BIG % THE_LOOP
 total = 0
 max_row = 0
-offset = 0
+c = 0
 previous = deepcopy(default_prior)
-#print(max_row)
-previous_p = None
-#for i in tqdm(range(steps)):
-for i in range(steps):
-    previous_p = previous
-    max_row, previous = run_blocks(THE_LOOP, previous)
-    #print_grid(previous)
+rock_num = 0
+cnt = 0
+last_max_row = 0
+last_c = 0
+while rock_num < BIG:
+    last_max_row = max_row
+    last_c = c
+    max_row, previous, c = run_blocks(BIG, previous, break_in=True)
+    if rock_num + c > BIG:
+        break
+    rock_num += c
     total += max_row
-    test, _ = run_blocks(THE_LOOP*(i+1))
-    #print((i+1), total, test)
-    if total != test:
-        print("BAD")
-        print_grid(_)
-        print_grid(previous)
-        print((i+1), total, test)
-        exit(1)
-    if i >= 100:
+    #pbar.update(c)
+    #print(c)
+    cnt += 1
+    print(rock_num, max_row, c)
+    if cnt > 1000: #and last_max_row == max_row and last_c == c:
         break
 
-max_row, previous = run_blocks(rest, previous, offset)
+left = BIG - rock_num
+print(f"left: {left}")
+to_apply = int(left / c)
+print(f"to_apply: {to_apply}")
+total += to_apply*max_row
+rock_num += c*to_apply
+left = BIG - rock_num
+print(f"left: {left}")
+max_row, previous, c = run_blocks(left, previous)
 total += max_row
 
 print(total)
