@@ -153,6 +153,7 @@ max_row, _ = run_blocks()
 #print_grid(_)
 print(max_row)
 print()
+exit(1)
 # part 2
 BIG = 1_000_000_000_000
 print(THE_LOOP)
