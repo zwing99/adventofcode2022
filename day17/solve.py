@@ -1,8 +1,9 @@
-from tqdm import tqdm
+#from tqdm import tqdm
 from copy import deepcopy
 import sys
 import math
 from collections import deque
+import functools
 filename = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
 
 with open(filename) as fh:
@@ -51,20 +52,27 @@ def get_jet_direction(jet_count):
         exit(1)
 
 
-def run_blocks(total_rocks=2022, print_it=False):
-    WIDTH = 7
-    HEIGHT = 1000
-    first_rows = []
-    grid = [[0 for x in range(WIDTH)] for y in range(HEIGHT)]
-    shift_y = 0
+WIDTH = 7
+HEIGHT = 50
+default_prior = tuple([tuple([1 for x in range(WIDTH)])])
+THE_LOOP = NUM_OF_JETSTREAM*NUM_ROCK_SHAPES
+
+
+@functools.cache
+def run_blocks(total_rocks=2022, prior=default_prior):
+    #print(total_rocks, hash(initial), last_max)
+    grid = [list(item) for item in prior]
+    init_val = len(grid)
+    max_row = init_val
+    while len(grid) < HEIGHT:
+        grid.append([0 for x in range(WIDTH)])
     jet_count = 0
-    max_row = 0
-    for rock_num in tqdm(range(total_rocks)):
+    for rock_num in range(total_rocks):
         rock = get_next_rock(rock_num, max_row)
         max_y = max([c[Y] for c in rock]) + 1
         for i in range(max_row + 1, max_y +1):
             for x in range(WIDTH):
-                grid[i%HEIGHT][x] = 0
+                grid[(i)%HEIGHT][x] = 0
         while True:
             # shift rock
             ###############################################################
@@ -82,28 +90,23 @@ def run_blocks(total_rocks=2022, print_it=False):
                     break
             # shift if can
             if can_shift:
-                if print_it: print(f"shift: {jet_dir}")
                 for coord in rock:
                     coord[X] += jet_dir
             else:
-                if print_it: print(f"no shift: {jet_dir}")
+                ...
             # drop rock
             ###############################################################
             # can drop
             can_drop = True
             for coord in rock:
                 new_x, new_y = coord[X], coord[Y] - 1
-                if new_y < 0:
-                    can_drop = False
-                    break
-                elif grid[(new_y)%HEIGHT][new_x] != 0:
+                if grid[(new_y)%HEIGHT][new_x] != 0:
                     can_drop = False
                     break
             # done with rock
             if not can_drop:
                 break
             # drop rock
-            if print_it: print(f"drop")
             for coord in rock:
                 coord[Y] -= 1
         # set rock
@@ -112,16 +115,19 @@ def run_blocks(total_rocks=2022, print_it=False):
         if max_y > max_row:
             max_row = max_y
         for coord in rock:
-            grid[(coord[Y])%HEIGHT][coord[X]] = 1
-        if rock_num == 10:
-            first_rows = grid[:10]
+            grid[(coord[Y]) % HEIGHT][coord[X]] = 1
+        None
 
-
-    #print(shift_y)
-    last_rows = []
-    for i in range(max_row - 10, max_row):
-        last_rows.append(grid[i % HEIGHT])
-    return max_row, first_rows, last_rows
+    new_grid = []
+    moar = max_row + 1
+    while sum(grid[moar%HEIGHT]) == 0:
+        moar += 1
+    for i in range(moar, moar+int(HEIGHT/2)):
+        asdf = grid[i%HEIGHT]
+        new_grid.append(asdf)
+    new_grid = tuple([tuple(item) for item in new_grid])
+    max_row -= init_val
+    return max_row, new_grid
 
 
 def convert(x):
@@ -134,37 +140,54 @@ def convert(x):
 def print_grid(grid):
     print("+" + 7*'-' + "+")
     for i in range(len(grid)-1, -1, -1):
+    #for i in range(len(grid)):
         print("|" + "".join([convert(x) for x in grid[i]]) + "|")
     print("+" + 7*'-' + "+")
         
 
 
-#print([x for x in JETSTREAM])
-#max_row = run_blocks(10, True)
 # part 1
-max_row, first_row, last_row = run_blocks()
-#print_grid(first_row)
-#print_grid(last_row)
+max_row, _ = run_blocks(10)
+#print_grid(_)
+max_row, _ = run_blocks()
+#print_grid(_)
 print(max_row)
+print()
 # part 2
 BIG = 1_000_000_000_000
-THE_LOOP = NUM_OF_JETSTREAM*NUM_ROCK_SHAPES
-max_row, first_row, last_row = run_blocks(THE_LOOP)
-rest_max_row, fr, lr = run_blocks(BIG%THE_LOOP)
-print_grid(first_row)
-print_grid(last_row)
-# max_row = run_blocks(1_000_000_000_000)
-# print(max_row)
-print(NUM_OF_JETSTREAM)
-print(NUM_ROCK_SHAPES)
 print(THE_LOOP)
-print(THE_LOOP%NUM_OF_JETSTREAM)
-print(THE_LOOP%NUM_ROCK_SHAPES)
-print(BIG%THE_LOOP)
-print(int(BIG/THE_LOOP))
-print(max_row)
-val = rest_max_row + int(math.floor(BIG/THE_LOOP)) * (max_row)
-print(val)
+steps = int(BIG/THE_LOOP)
+#print(steps)
+rest = BIG % THE_LOOP
+total = 0
+max_row = 0
+offset = 0
+previous = deepcopy(default_prior)
+#print(max_row)
+previous_p = None
+#for i in tqdm(range(steps)):
+for i in range(steps):
+    previous_p = previous
+    max_row, previous = run_blocks(THE_LOOP, previous)
+    #print_grid(previous)
+    total += max_row
+    test, _ = run_blocks(THE_LOOP*(i+1))
+    #print((i+1), total, test)
+    if total != test:
+        print("BAD")
+        print_grid(_)
+        print_grid(previous)
+        print((i+1), total, test)
+        exit(1)
+    if i >= 100:
+        break
+
+max_row, previous = run_blocks(rest, previous, offset)
+total += max_row
+
+print(total)
+
+
 
 
 
@@ -175,3 +198,8 @@ print(val)
 # 1560717471037
 # 1560737290682
 # 1514285714288
+# 1560658012114
+# 1560899790897
+# 1560935466164
+# 1560915646636
+# 1559121989969
