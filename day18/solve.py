@@ -138,4 +138,5 @@ for i in items.values():
         if o not in all_voids:
             total += 1
 
+print(len(voids)-1)
 print(total)
