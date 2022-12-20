@@ -92,11 +92,28 @@ class Blueprint:
             ),
         )
 
-    def more_than_max_needed(self, r: Stuff, days_left: int) -> bool:
-        num_robos = self.robo_counts[STUFF_TO_ROBO[r]]
-        total = days_left * num_robos + self.stuff_counts[r]
-        max_use = self.maxes[r] * days_left
-        return total > max_use
+    def get_state(self, time_left: min):
+        return (
+            self.clock,
+            self.next_robo.value,
+            self.robo_counts[RoboTypes.OreRobo],
+            self.robo_counts[RoboTypes.ClayRobo],
+            self.robo_counts[RoboTypes.ObsRobo],
+            self.robo_counts[RoboTypes.GeoRobo],
+            min(
+                self.stuff_counts[Stuff.Ore],
+                time_left * self.maxes[Stuff.Ore] - (time_left - 1) * self.robo_counts[RoboTypes.OreRobo],
+            ),
+            min(
+                self.stuff_counts[Stuff.Clay],
+                time_left * self.maxes[Stuff.Clay] - (time_left - 1) * self.robo_counts[RoboTypes.ClayRobo],
+            ),
+            min(
+                self.stuff_counts[Stuff.Obs],
+                time_left * self.maxes[Stuff.Obs] - (time_left - 1) * self.robo_counts[RoboTypes.ObsRobo],
+            ),
+            self.stuff_counts[Stuff.Geo],
+        )
 
     def time_to_make(self, rt: RoboTypes) -> int:
         cost = self.costs[rt]
@@ -170,27 +187,33 @@ for bp in bps[:3]:
     ]
     MAX_TIME = 32
     # best_order2 = [Stuff.Ore, Stuff.Clay, Stuff.Obs, Stuff.Geo]
-    tests = [False for i in range(10)]
+    visited = set()
     for i in range(MAX_TIME):
         next_set: list[Blueprint] = []
         time_left = MAX_TIME - i - 1
         for item in simset:
+            state = item.get_state(time_left)
+            if state in visited:
+                continue
+            visited.add(state)
             if item.step_one_minute():
                 options = []
-                if item.time_to_make(
-                    RoboTypes.OreRobo
-                ) <= time_left and not item.more_than_max_needed(Stuff.Ore, time_left):
+                if (
+                    item.time_to_make(RoboTypes.OreRobo) <= time_left
+                    and item.robo_counts[RoboTypes.OreRobo] < item.maxes[Stuff.Ore]
+                ):
                     options.append(RoboTypes.OreRobo)
 
-                if item.time_to_make(
-                    RoboTypes.ClayRobo
-                ) <= time_left and not item.more_than_max_needed(Stuff.Clay, time_left):
+                if (
+                    item.time_to_make(RoboTypes.ClayRobo) <= time_left
+                    and item.robo_counts[RoboTypes.ClayRobo] < item.maxes[Stuff.Clay]
+                ):
                     options.append(RoboTypes.ClayRobo)
 
                 if (
                     item.robo_counts[RoboTypes.ClayRobo] > 0
                     and item.time_to_make(RoboTypes.ObsRobo) <= time_left
-                    and not item.more_than_max_needed(Stuff.Obs, time_left)
+                    and item.robo_counts[RoboTypes.ObsRobo] < item.maxes[Stuff.Obs]
                 ):
                     options.append(RoboTypes.ObsRobo)
 

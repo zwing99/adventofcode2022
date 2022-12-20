@@ -31,6 +31,7 @@ STUFF_TO_ROBO = {
     Stuff.Geo: RoboTypes.GeoRobo,
 }
 
+
 @dataclass
 class Blueprint:
     bp_id: int
@@ -94,7 +95,7 @@ class Blueprint:
     def more_than_max_needed(self, r: Stuff, days_left: int) -> bool:
         num_robos = self.robo_counts[STUFF_TO_ROBO[r]]
         total = days_left * num_robos + self.stuff_counts[r]
-        max_use = self.maxes[r] * days_left 
+        max_use = self.maxes[r] * days_left
         return total > max_use
 
     def time_to_make(self, rt: RoboTypes) -> int:
