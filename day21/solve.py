@@ -43,15 +43,14 @@ print(get_value())
 
 humn = z3.Int('z3')
 monks["humn"] = humn
+monks["humn"] = complex(0,1)
 
 def get_equation(name="root"):
     v = monks[name]
     if name == "root":
         sideA = get_equation(v[0])
-        print(sideA)
         sideB = get_equation(v[2])
-        print(sideB)
-        return sideA == sideB
+        return (sideA, sideB)
     else:
         if isinstance(v, int):
             return v
@@ -73,6 +72,12 @@ def get_equation(name="root"):
             return v
 
 
-a = get_equation()
-print(a)
-print(z3.solve(a))
+a,b = get_equation()
+#print(a)
+#print(b)
+print()
+if (a.imag == 0):
+    print(int((a.real - b.real)/b.imag))
+else:
+    print(int((b.real - a.real)/a.imag))
+#print(z3.solve(a==b))
