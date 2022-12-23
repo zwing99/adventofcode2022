@@ -63,9 +63,8 @@ def print_positions(positions):
         print(row)
 
 
-
-
-def run_rounds(positions, num_rounds=10):
+def run_rounds(positions: set, num_rounds=10):
+    all_positions = []
     for rnd in range(num_rounds):
         # print(f"-r{rnd}-")
         proposed = defaultdict(list)
@@ -97,8 +96,6 @@ def run_rounds(positions, num_rounds=10):
                         proposed[new_p].append(p)
                         # print("propose", p, new_p)
                         break
-        if len(proposed) == 0:
-            break
         did_move = False
         for prop, origs in proposed.items():
             # print(origs, prop)
@@ -110,15 +107,17 @@ def run_rounds(positions, num_rounds=10):
             else:
                 ...
                 # print(f'too many: {origs}')
+        all_positions.append(positions.copy())
         if not did_move:
             break
         # print(len(positions)
         # print_positions(positions)
-    return positions, rnd + 1
+    return positions, rnd + 1, all_positions
+
 
 print("---pt1---")
 positions = read_positions()
-positions, rnd = run_rounds(positions)
+positions, rnd, all_positions = run_rounds(positions)
 
 min_x, max_x, min_y, max_y = extents(positions)
 print_positions(positions)
@@ -130,7 +129,8 @@ print(grid_size, empty)
 
 print("---pt2---")
 positions = read_positions()
-positions, rnd = run_rounds(positions, 1_000_000_000)
+# positions, rnd, all_positions = run_rounds(positions, 10)
+positions, rnd, all_positions = run_rounds(positions, 1_000_000_000)
 
 min_x, max_x, min_y, max_y = extents(positions)
 print_positions(positions)
@@ -139,3 +139,31 @@ print(max_x, max_y, min_x, min_y)
 grid_size = (max_y - min_y + 1) * (max_x - min_x + 1)
 empty = grid_size - len(positions)
 print(grid_size, empty)
+
+
+def make_movie():
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib import animation
+    from functools import partial
+
+    fig, ax = plt.subplots()
+    x = []
+    y = []
+    line1 = ax.scatter(x, y, s=0.1)
+    plt.xlim(min_x, max_x)
+    plt.ylim(min_y, max_y)
+
+    def animate_func(num):
+        x = [p[X] for p in all_positions[num]]
+        y = [p[Y] for p in all_positions[num]]
+        line1.set_offsets(np.c_[x, y])
+
+    ani = animation.FuncAnimation(
+        fig,
+        animate_func,
+        frames=len(all_positions),
+        interval=10,
+    )
+    ani.save("foobar.mp4")
+    plt.show()
