@@ -26,35 +26,6 @@ for line in lines:
     total += v_line
 
 
-def convert(total):
-    i = 0
-    while 5**i < total:
-        i += 1
-    li = [5**j for j in range(i, -1, -1)]
-    li2 = []
-
-    def sub_convert(t, res, j):
-        res = 0
-        rem = 0
-        for i in range(j, len(li)):
-            if li[i] <= t:
-                quo = t // li[i]
-                rem = t % li[i]
-                if quo <= 2:
-                    res += f"{quo}"
-                    break
-                else:
-                    res = "1"
-                    rem = t - li[i-1]
-                    break
-        li2.append(res)
-        if j < len(li):
-            sub_convert(rem, "", j+1)
-
-    sub_convert(total, "", 0)
-    return li2
-
-
 def numberToBase(n, b):
     if n == 0:
         return [0]
@@ -70,7 +41,7 @@ def to_weird(n):
     new = []
     if v[0] > 2:
         new.append(1)
-        new.append(v[0]-5)
+        new.append(v[0] - 5)
     else:
         new.append(v[0])
     for i in v[1:]:
@@ -82,13 +53,12 @@ def to_weird(n):
                     break
                 else:
                     new[z] = -2
-            new.append(i-5)
+            new.append(i - 5)
         else:
             new.append(i)
-    
+
     print(new)
     return "".join([MAP_R[n] for n in new])
-            
 
 
 print(to_weird(total))
