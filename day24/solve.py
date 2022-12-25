@@ -166,6 +166,10 @@ def dfs(
                 dfs(m + 1, c_pos, winds, wind_hashes, extents, start, end)
 
 
+import help
+help.go(lines)
+exit(0)
+
 ## part 1
 start, end, extents, wind_positions = parse_grid()
 winds = {0: wind_positions}
