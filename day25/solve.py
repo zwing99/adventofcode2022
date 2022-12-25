@@ -65,3 +65,4 @@ print(to_weird(total))
 
 
 # 28927640190471
+    

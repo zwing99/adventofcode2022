@@ -38,7 +38,7 @@ long long part2(std::vector<std::tuple<std::tuple<int, int>, int> >  sensors) {
     long long x;
     long long y;
     for (y=0; y<=MAX_BOUNDS; y++) {
-        std::cout<<y<<std::endl;
+        //std::cout<<y<<std::endl;
         for (x=0; x<=MAX_BOUNDS; x++) {
             bool found = false;
             for (auto s : v_sensors) {
